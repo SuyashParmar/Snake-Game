@@ -1,6 +1,5 @@
 #include "snake.h"
 #include <unistd.h> // for usleep
-#include <time.h>   // for time()
 #include <fcntl.h>  // for open(), file system I/O
 
 int show_main_menu(int high_score) {
@@ -35,7 +34,13 @@ int show_main_menu(int high_score) {
 
 int main(void) {
     // 1. Initialize math/rng
-    math_srand(time(NULL));
+    unsigned int seed = 1;
+    int rand_fd = open("/dev/urandom", O_RDONLY);
+    if (rand_fd >= 0) {
+        read(rand_fd, &seed, sizeof(seed));
+        close(rand_fd);
+    }
+    math_srand(seed);
 
     // 2. Initialize terminal (screen & keyboard)
     kb_init();
@@ -52,7 +57,7 @@ int main(void) {
             int val = 0;
             // Basic manual atoi without stdlib
             for (int i = 0; i < bytes && buf[i] >= '0' && buf[i] <= '9'; i++) {
-                val = val * 10 + (buf[i] - '0');
+                val = math_add((int)math_mul((unsigned int)val, 10), buf[i] - '0');
             }
             high_score = val;
         }
@@ -75,7 +80,7 @@ int main(void) {
     char dir = DIR_RIGHT;
 
     // Snake initial position (center)
-    struct Node* head = mem_alloc_node(WIDTH / 2, HEIGHT / 2);
+    struct Node* head = mem_alloc_node(math_div(WIDTH, 2), math_div(HEIGHT, 2));
     struct Node* tail = head;
 
     // Food initial position
@@ -156,6 +161,11 @@ int main(void) {
             tail = current;
             tail->next = 0; // NULL
         }
+
+        // Continually redress food to avoid visual deletion when snake crosses it
+        screen_set_color(COLOR_RED);
+        screen_draw_char(food_x + 1, food_y + 1, '*');
+        screen_reset_color();
 
         // Draw score
         char score_str[32];

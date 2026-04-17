@@ -1,19 +1,32 @@
 #include "snake.h"
-#include <stdlib.h> // allowed purely for malloc/free as per plan
+
+#define MAX_MEM_NODES 1000
+
+static struct Node mem_pool[MAX_MEM_NODES];
+static int node_used[MAX_MEM_NODES] = {0};
 
 struct Node* mem_alloc_node(int x, int y) {
-    struct Node* new_node = (struct Node*)malloc(sizeof(struct Node));
-    if (new_node) {
-        new_node->x = x;
-        new_node->y = y;
-        new_node->next = 0; // NULL
+    for (int i = 0; i < MAX_MEM_NODES; ++i) {
+        if (!node_used[i]) {
+            node_used[i] = 1;
+            struct Node* new_node = &mem_pool[i];
+            new_node->x = x;
+            new_node->y = y;
+            new_node->next = 0; // NULL
+            return new_node;
+        }
     }
-    return new_node;
+    return 0; // NULL if out of memory
 }
 
 void mem_free_node(struct Node* node) {
     if (node) {
-        free(node);
+        for (int i = 0; i < MAX_MEM_NODES; ++i) {
+            if (&mem_pool[i] == node) {
+                node_used[i] = 0;
+                break;
+            }
+        }
     }
 }
 

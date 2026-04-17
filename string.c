@@ -31,9 +31,9 @@ void custom_itoa(int value, char* str, int base) {
 
     // Process individual digits
     while (value != 0) {
-        int rem = value % base;
+        int rem = math_mod((unsigned int)value, (unsigned int)base);
         str[i++] = (rem > 9) ? (rem - 10) + 'a' : rem + '0';
-        value = value / base;
+        value = math_div((unsigned int)value, (unsigned int)base);
     }
 
     if (isNegative) {

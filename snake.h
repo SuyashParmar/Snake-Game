@@ -29,6 +29,9 @@ struct Node {
 // Adds/Subtracts values, generating positions or rng
 int math_add(int a, int b);
 int math_sub(int a, int b);
+unsigned int math_mul(unsigned int a, unsigned int b);
+unsigned int math_div(unsigned int dividend, unsigned int divisor);
+unsigned int math_mod(unsigned int dividend, unsigned int divisor);
 void math_srand(unsigned int seed);
 int math_rand_range(int min, int max);
 int math_check_bounds(int x, int y, int width, int height);

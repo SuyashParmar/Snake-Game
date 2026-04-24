@@ -23,6 +23,7 @@ struct Node {
 #define COLOR_GREEN 32
 #define COLOR_YELLOW 33
 #define COLOR_BLUE 34
+#define COLOR_MAGENTA 35
 #define COLOR_CYAN 36
 
 // --- math.c ---

@@ -91,13 +91,20 @@ void screen_reset_color(void) {
 
 void screen_draw_grid(int width, int height) {
     screen_set_color(COLOR_CYAN);
-    for (int x = 1; x <= width + 2; x++) {
-        screen_draw_char(x, 1, '#');
-        screen_draw_char(x, height + 2, '#');
+    // Draw top and bottom borders
+    for (int x = 2; x <= width + 1; x++) {
+        screen_draw_string(x, 1, "═");
+        screen_draw_string(x, height + 2, "═");
     }
-    for (int y = 1; y <= height + 2; y++) {
-        screen_draw_char(1, y, '#');
-        screen_draw_char(width + 2, y, '#');
+    // Draw left and right borders
+    for (int y = 2; y <= height + 1; y++) {
+        screen_draw_string(1, y, "║");
+        screen_draw_string(width + 2, y, "║");
     }
+    // Draw corners
+    screen_draw_string(1, 1, "╔");
+    screen_draw_string(width + 2, 1, "╗");
+    screen_draw_string(1, height + 2, "╚");
+    screen_draw_string(width + 2, height + 2, "╝");
     screen_reset_color();
 }

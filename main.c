@@ -79,6 +79,13 @@ int main(void) {
     int score = 0;
     char dir = DIR_RIGHT;
 
+    int sleep_time = 100000;
+    int pending_growth = 0;
+
+    int bonus_food_x = 0;
+    int bonus_food_y = 0;
+    int bonus_food_timer = 0;
+
     // Snake initial position (center)
     struct Node* head = mem_alloc_node(math_div(WIDTH, 2), math_div(HEIGHT, 2));
     struct Node* tail = head;
@@ -90,8 +97,8 @@ int main(void) {
     screen_draw_grid(WIDTH, HEIGHT);
 
     // Initial draw
-    screen_set_color(COLOR_GREEN);
-    screen_draw_char(head->x + 1, head->y + 1, 'O');
+    screen_set_color(COLOR_YELLOW);
+    screen_draw_string(head->x + 1, head->y + 1, "@");
     screen_set_color(COLOR_RED);
     screen_draw_char(food_x + 1, food_y + 1, '*');
     screen_reset_color();
@@ -124,17 +131,40 @@ int main(void) {
         }
 
         // Check if food eaten
-        int ate_food = 0;
         if (new_x == food_x && new_y == food_y) {
             score = math_add(score, 1);
-            ate_food = 1;
+            pending_growth = math_add(pending_growth, 1);
+            
+            // Decrease sleep time
+            sleep_time = math_sub(sleep_time, 2000);
+            if (sleep_time < 40000) sleep_time = 40000;
+
             // Respawn food
             food_x = math_rand_range(1, WIDTH);
             food_y = math_rand_range(1, HEIGHT);
             screen_set_color(COLOR_RED);
             screen_draw_char(food_x + 1, food_y + 1, '*');
             screen_reset_color();
+
+            // Chance to spawn bonus food (if none active)
+            if (bonus_food_timer <= 0 && math_rand_range(1, 5) == 1) {
+                bonus_food_x = math_rand_range(1, WIDTH);
+                bonus_food_y = math_rand_range(1, HEIGHT);
+                bonus_food_timer = 30; // Lasts 30 ticks
+            }
         }
+
+        // Check if bonus food eaten
+        if (bonus_food_timer > 0 && new_x == bonus_food_x && new_y == bonus_food_y) {
+            score = math_add(score, 5); // extra score
+            pending_growth = math_add(pending_growth, 2);
+            bonus_food_timer = 0; // Despawn
+            screen_draw_char(bonus_food_x + 1, bonus_food_y + 1, ' ');
+        }
+
+        // Draw current head as body
+        screen_set_color(COLOR_GREEN);
+        screen_draw_string(head->x + 1, head->y + 1, "o");
 
         // Allocate new head string to new position
         struct Node* new_head = mem_alloc_node(new_x, new_y);
@@ -142,11 +172,13 @@ int main(void) {
         head = new_head;
 
         // Draw new head
-        screen_set_color(COLOR_GREEN);
-        screen_draw_char(head->x + 1, head->y + 1, 'O');
+        screen_set_color(COLOR_YELLOW);
+        screen_draw_string(head->x + 1, head->y + 1, "@");
         screen_reset_color();
 
-        if (!ate_food) {
+        if (pending_growth > 0) {
+            pending_growth = math_sub(pending_growth, 1);
+        } else {
             // Remove tail
             struct Node* current = head;
             while (current->next != tail) {
@@ -160,6 +192,19 @@ int main(void) {
             mem_free_node(tail);
             tail = current;
             tail->next = 0; // NULL
+        }
+
+        // Update bonus food timer
+        if (bonus_food_timer > 0) {
+            bonus_food_timer = math_sub(bonus_food_timer, 1);
+            if (bonus_food_timer <= 0) {
+                // Clear bonus food from screen
+                screen_draw_char(bonus_food_x + 1, bonus_food_y + 1, ' ');
+            } else {
+                screen_set_color(COLOR_MAGENTA);
+                screen_draw_string(bonus_food_x + 1, bonus_food_y + 1, "★");
+                screen_reset_color();
+            }
         }
 
         // Continually redress food to avoid visual deletion when snake crosses it
@@ -182,8 +227,7 @@ int main(void) {
         screen_reset_color();
 
         // Sleep to control game speed
-        // 100,000 microseconds = 0.1 seconds
-        usleep(100000); 
+        usleep(sleep_time); 
     }
 
     // 5. Clean up & Exit

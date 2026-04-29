@@ -46,6 +46,13 @@ Because the project uses standard POSIX system calls for input and output, it ru
    ./snake
    ```
 
+## 🛠 How the Makefile Works
+The project uses a standard `Makefile` to compile all the custom `.c` files into a single executable efficiently.
+* **Compiler Flags (`CFLAGS`)**: It compiles using `gcc` with strict warnings (`-Wall -Wextra`), enforces the C99 standard (`-std=c99`), and applies performance optimization (`-O2`).
+* **Object Compilation**: It first converts each `.c` source file (like `math.c`, `memory.c`) into an intermediate `.o` object file. If you only modify one file, running `make` again will only recompile that specific file, saving time!
+* **Linking**: It links all the compiled `.o` files together to create the final `snake` executable.
+* **Clean Command**: You can run `make clean` to delete all generated `.o` files and the executable, keeping your workspace tidy.
+
 ## 📂 Project Structure
 * `main.c` - The core game loop, state management, and rendering logic.
 * `snake.h` - Global configurations, structures, and function declarations.
